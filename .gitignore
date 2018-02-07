@@ -1,0 +1,9 @@
+/*
+!/jenkins
+!/nginx
+!/run-all.sh
+!/stop-all.sh
+!/mailhog
+!/teamspeak
+!.gitignore
+

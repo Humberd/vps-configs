@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+  teamspeak:
+    restart: always
+    container_name: "teamspeak"
+    image: mbentley/teamspeak
+    ports:
+      - "9987:9987/udp"
+      - "30033:30033"
+      - "10011:10011"
+      - "41144:41144"
+    environment:
+      - VIRTUAL_HOST=teamspeak.quazarus.com
+      - VIERUAL_PORT=30033
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external:
+      name: nginx-proxy

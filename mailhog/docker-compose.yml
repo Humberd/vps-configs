@@ -1,0 +1,23 @@
+version: "2"
+
+services:
+  mailhog:
+    restart: always
+    container_name: "mailhog"
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      - MH_HOSTNAME=mail.quazarus.com
+      - VIRTUAL_HOST=mail.quazarus.com
+      - VIRTUAL_PORT=8025
+      - LETSENCRYPT_HOST=mail.quazarus.com
+      - LETSENCRYPT_EMAIL=admin@admin.com
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external:
+      name: nginx-proxy
