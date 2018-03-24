@@ -1,25 +1,46 @@
+FROM docker:18.03.0 as static-docker
+
+FROM docker/compose:1.20.1 as static-docker-compose
+
 FROM jenkins/jenkins
 
 MAINTAINER Humberd
 
 USER root
 
-RUN apt-get update && apt-get install -y \
-     apt-transport-https \
-     ca-certificates \
-     curl \
-     gnupg2 \
-     software-properties-common
+ENV CLOUD_SDK_VERSION 193.0.0
 
-RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add -
+COPY --from=static-docker /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=static-docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-compose
 
-RUN add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-   $(lsb_release -cs) \
-   stable"
-
-RUN apt-get update && apt-get install -y docker-ce
-
-RUN curl -L https://github.com/docker/compose/releases/download/1.17.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-
-RUN chmod +x /usr/local/bin/docker-compose
+RUN apt-get -qqy update && apt-get install -qqy \
+        curl \
+        gcc \
+        python-dev \
+        python-setuptools \
+        apt-transport-https \
+        lsb-release \
+        openssh-client \
+        git \
+    && easy_install -U pip && \
+    pip install -U crcmod   && \
+    export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
+    echo "deb https://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    apt-get update && \
+    apt-get install -y google-cloud-sdk=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-app-engine-python=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-app-engine-java=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-app-engine-go=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-datalab=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-datastore-emulator=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-pubsub-emulator=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-bigtable-emulator=${CLOUD_SDK_VERSION}-0 \
+        google-cloud-sdk-cbt=${CLOUD_SDK_VERSION}-0 \
+        kubectl && \
+    gcloud config set core/disable_usage_reporting true && \
+    gcloud config set component_manager/disable_update_check true && \
+    gcloud config set metrics/environment github_docker_image && \
+    gcloud --version && \
+    docker --version && kubectl version --client
+VOLUME ["/root/.config"]

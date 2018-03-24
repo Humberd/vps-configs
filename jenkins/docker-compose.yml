@@ -17,11 +17,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - nginx-proxy
+      - jenkins
 
 networks:
   nginx-proxy:
     external:
       name: nginx-proxy
+  jenkins:
+    external:
+      name: jenkins
 
 volumes:
   jenkins_storage:
