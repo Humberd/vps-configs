@@ -1,0 +1,16 @@
+FRO
+
+FROM docker:18.03.0 as static-docker
+
+FROM docker/compose:1.20.1 as static-docker-compose
+
+FROM jenkins/jenkins
+
+MAINTAINER Humberd
+
+USER root
+
+COPY --from=static-google-cloud-sdk /usr/local/bin/gcloud /usr/local/bin/gcloud
+COPY --from=static-google-cloud-sdk /usr/local/bin/kubectl /usr/local/bin/kubectl
+COPY --from=static-docker /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=static-docker-compose /usr/local/bin/docker-compose /usr/local/bin/docker-compose
